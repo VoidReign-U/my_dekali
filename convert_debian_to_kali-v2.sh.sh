@@ -1,33 +1,5 @@
 #!/bin/bash
 
-RED="\e[31m"
-GREEN="\e[32m"
-CYAN="\e[36m"
-NC="\e[0m"
-
-dragon_art() {
-cat << "EOF"
-      \                    / \  //\
-       \    |\___/|      /   \//  \\
-            /O  O  \__  /    //  | \ \    
-           /     /  \/_/    //   |  \  \  
-           @_^_@'/   \/_   //    |   \   \ 
-           //_^_/     \\/_//     |    \    \  
-        ( //) |        \///      |     \     \  
-      ( / /) _|_ /   )  //       |      \     _\ 
-    ( // /) '/,_ _ _/  (~        |       \  /   
-  (( / / )) ,-{        _    _-_ |        ~   
- (( // / ))  '/\      /        /       
- (( /// ))      `.   <_,' |--|-\  
-  (( / ))     ____)    (__/_____) 
-EOF
-}
-
-# Libyan Flag (symbolic)
-draw_flag() {
-    echo -e "${RED}🇱🇾  LIBYA  🇱🇾${NC}"
-}
-
 # Choose Language
 echo -e "${GREEN}Choose Language / اختر اللغة:"
 echo "1) English"
@@ -40,12 +12,8 @@ if [[ "$lang" != "1" && "$lang" != "2" ]]; then
     exit 1
 fi
 
-clear
-draw_flag
-dragon_art
-
 if [[ "$lang" == "2" ]]; then
-    echo -e "${CYAN}هذا السكربت سيحول ديبيان إلى بيئة تشبه كالي عبر إضافة المستودعات الرسمية.${NC}"
+    echo -e "${CYAN}هذا السكربت سيحول ديبيان إلى بيئة كالي نظيفة بدون زوائد عبر إضافة المستودعات الرسمية.${NC}"
     echo "سيتم استخدام aptitude وتثبيت الأدوات لاحقًا يدويًا حسب رغبتك."
     read -rp "هل تريد المتابعة؟ (نعم/لا): " confirm
     if [[ "$confirm" != "نعم" ]]; then
@@ -78,6 +46,84 @@ wget -qO - https://archive.kali.org/archive-key.asc | sudo gpg --dearmor -o /etc
 echo -e "${GREEN}[*] Updating package list and installing aptitude...${NC}"
 sudo apt update && sudo apt install -y aptitude
 
+# Use netselect-apt to speed up repository mirrors
+echo -e "${GREEN}[*] # Use netselect-apt to speed up repository mirrors...${NC}"
+sudo netselect-apt
+clear
+
+# Select Desktop Environment
+echo -e "${GREEN}Choose a desktop environment to install / اختر بيئة سطح المكتب:"
+echo "1) XFCE"
+echo "2) GNOME"
+echo "3) LXQt"
+echo "4) KDE Plasma"
+echo "5) MATE"
+echo "6) Server (No Desktop)"
+echo "7) Install DWM from GitHub"
+read -rp "> " desktop_choice
+
+case $desktop_choice in
+  1)
+    echo -e "${CYAN}Installing XFCE...${NC}"
+    sudo apt install -y xfce4
+    ;;
+  2)
+    echo -e "${CYAN}Installing GNOME...${NC}"
+    sudo apt install -y gnome-shell
+    ;;
+  3)
+    echo -e "${CYAN}Installing LXQt...${NC}"
+    sudo apt install -y lxqt
+    ;;
+  4)
+    echo -e "${CYAN}Installing KDE Plasma...${NC}"
+    sudo apt install -y kde-plasma-desktop
+    ;;
+  5)
+    echo -e "${CYAN}Installing MATE...${NC}"
+    sudo apt install -y mate-desktop-environment
+    ;;
+  6)
+    echo -e "${CYAN}Installing Server (No Desktop)...${NC}"
+    sudo apt install -y tasksel
+    sudo tasksel install minimal
+    ;;
+  7)
+    echo -e "${CYAN}Installing DWM from GitHub...${NC}"
+    read -rp "Enter the GitHub repository URL for your custom DWM: " github_url
+    git clone "$github_url" ~/dwm
+    cd ~/dwm || exit
+    make
+    sudo make install
+    echo -e "${CYAN}DWM has been installed successfully from GitHub.${NC}"
+    
+    # Check if DWM was installed successfully
+    if command -v dwm &>/dev/null; then
+        echo -e "${CYAN}dwm was installed successfully.${NC}"
+    else
+        echo -e "${RED}Failed to install dwm.${NC}"
+    fi
+    ;;
+  *)
+    echo "Invalid choice. Exiting."
+    exit 1
+    ;;
+esac
+
+# Ask if user wants to install tools now
+read -rp "Do you want to install tools now? (yes/no): " tools_choice
+if [[ "$tools_choice" == "yes" || "$tools_choice" == "نعم" ]]; then
+    echo -e "${CYAN}Installing tools (nmap gobuster hydra john metasploit-framework Temux)...${NC}"
+    
+    # Add your tools here. For example:
+    # sudo apt install -y nmap gobuster burpsuite hydra
+
+    # Example list of tools:
+    sudo apt install -y nmap gobuster hydra john metasploit-framework Temux
+
+    # You can add more tools as needed, just modify this section.
+fi
+
 # Done
-echo -e "${GREEN}[✔] Done. Your Debian now has Kali sources. Be cautious using mixed packages.${NC}"
-echo -e "${CYAN}-- Script by: VidReign 🇱🇾 --${NC}"
+echo -e "${GREEN}[✔] Done. Your Debian now has Kali sources and the selected desktop environment installed.${NC}"
+echo -e "${CYAN}-- Script by: VidReign  --${NC}"
